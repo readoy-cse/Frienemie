@@ -22,6 +22,12 @@ spec:
       volumeMounts:
         - name: app-code
           mountPath: /app
+  # Taint X Tolerance 
+  # tolerations:
+  #   - key: "app"
+  #     operator: "Equal"
+  #     value: "nginx"
+  #     effect: "NoSchedule"
 
   affinity:
     nodeAffinity:
@@ -39,7 +45,7 @@ spec:
                 values: 
                   - usa 
                   - europe
-                  - asia
+                  
       # preferredDuringSchedulingIgnoredDuringExecution:
     
   # node Selector 
@@ -62,13 +68,6 @@ spec:
   #     volumeMounts:
   #       - name: app-code
   #         mountPath: /app
-
-  # Taint X Tolerance 
-  # tolerations:
-  #   - key: "app"
-  #     operator: "Equal"
-  #     value: "nginx"
-  #     effect: "NoSchedule"
     
   volumes: 
     - name: app-code
