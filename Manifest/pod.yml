@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+
+spec:
+
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+      resources:
+        requests:
+          memory: "400Mi"
+          cpu: "100m"
+        limits:
+          memory: "500Mi"
+          cpu: "700m"
+      volumeMounts:
+        - name: app-code
+          mountPath: /app
+  # Taint X Tolerance 
+  # tolerations:
+  #   - key: "app"
+  #     operator: "Equal"
+  #     value: "nginx"
+  #     effect: "NoSchedule"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: machine-type
+                operator: In
+                values:
+                  - xlarge
+                  - xxlarge
+          - matchExpressions:
+              - key: machine-zone 
+                operator: In
+                values: 
+                  - usa 
+                  - europe
+                  
+      # preferredDuringSchedulingIgnoredDuringExecution:
+    
+  # node Selector 
+  # nodeSelector:
+  #   machine-type: xlarge
+    
+    # sidecar container 
+    # - name: server
+    #   image: app-server
+    #   imagePullPolicy: IfNotPresent
+    #   ports:
+    #     - containerPort: 2024
+
+  # Init Container 
+  # initContainers:
+  #   - name: clone-app
+  #     image: ubuntu:latest
+  #     command: ['/bin/sh', '-c']
+  #     args: ["echo 'Cloning app...' >> /app/File.txt "]
+  #     volumeMounts:
+  #       - name: app-code
+  #         mountPath: /app
+    
+  volumes: 
+    - name: app-code
+      emptyDir: {}
+
+

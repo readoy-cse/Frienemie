@@ -1,12 +1,10 @@
-FROM node:18-alpine as base
+FROM node:slim
 
-# install Dependencies
-WORKDIR /app
-COPY package*.json ./
-RUN npm install nodemon -g
+WORKDIR /Server
+COPY package*.json /Server/
 RUN npm install
 
-# copy all files
 COPY . .
+
 EXPOSE 2024
-CMD ["npm", "start"]
+CMD [ "node", "index.js" ]
