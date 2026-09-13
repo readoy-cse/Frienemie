@@ -1,0 +1,19 @@
+stages:
+  - build
+  - deploy
+
+build-image:
+    stage: build
+    image: docker
+    services:
+      - docker:dind
+    script:
+        - docker -v
+        - echo "Building..."
+        - echo "Url = $HERBOR"
+
+# deploy:
+#     stage: deploy
+#     script:
+#         - echo "Deploying..."
+#         - docker -v
