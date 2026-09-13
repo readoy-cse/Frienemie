@@ -6,11 +6,18 @@ build-image:
     stage: build
     image: docker
     services:
-      - docker:dind
+      - name: docker:dind
+        alias: docker
+
+    variables:
+      DOCKER_HOST: tcp://docker:2375
+      DOCKER_TLS_CERTDIR: ""
+
     script:
-        - docker -v
-        - echo "Building..."
-        - echo "Url = $HERBOR"
+      - docker build -t frontend .
+      - docker tag frontend $HarborRepo/$HrProject/frontend:latest
+      - echo "$HrPasswd" | docker login $HarborRepo -u $username --password-stdin
+      - docker push $HarborRepo/$HrProject/frontend
 
 # deploy:
 #     stage: deploy
