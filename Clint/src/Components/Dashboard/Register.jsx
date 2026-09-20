@@ -4,8 +4,7 @@ import HashLoader from "react-spinners/HashLoader";
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-const baseUrl = import.meta.env.VITE_API_URL;
+import { baseUrl } from '../../utils/env';
 
 const Register = () => {
 
@@ -64,29 +63,39 @@ const Register = () => {
 
         e.preventDefault();
 
-        const url = await UploadImage(image);
-        console.log(url);
+        if (!Name || !Email || !Phoen_No) {
+            setLoading(false);
+            return toast.error("Please fill in all fields");
+        }
+
+        // Image na thakle upload skip kore default image use hobe
+        let url = image ? await UploadImage() : null;
+        if (!url) {
+            url = imgUrl;
+        }
 
         setLoading(true);
         const NewUser = { Name, Email, image: url, Phoen_No, uid: UserId }
         console.log(NewUser);
 
-        const responce = await fetch(`${baseUrl}/route/cr`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(NewUser),
-        })
+        try {
+            const responce = await fetch(`${baseUrl}/route/cr`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(NewUser),
+            })
 
-        const result = await responce.json();
-        if (!responce.ok) {
-            console.log(result.error);
-            setError(result.error);
-            toast.error('An Error Detected !', result.error);
-            setLoading(false);
-        }
-        if (responce.ok) {
+            const result = await responce.json();
+            if (!responce.ok) {
+                console.log(result.error);
+                setError(result.error);
+                toast.error(result.error || "Something went wrong. Please try again.");
+                setLoading(false);
+                return;
+            }
+
             toast.success("Submitted Successfully")
             console.log(result);
             setName("");
@@ -95,6 +104,11 @@ const Register = () => {
             setError("");
             setLoading(false);
             nevigate('/dash');
+        } catch (error) {
+            console.log(error);
+            setError("Unable to reach the server");
+            toast.error("Unable to connect to the server. Please check your connection and try again.");
+            setLoading(false);
         }
 
     }

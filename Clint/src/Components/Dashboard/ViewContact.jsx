@@ -4,9 +4,7 @@ import HashLoader from "react-spinners/HashLoader";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import imgUrl from '../../assets/Img/Untitled.png';
-
-
-const baseUrl = import.meta.env.VITE_API_URL;
+import { baseUrl } from '../../utils/env';
 
 
 const ViewContact = () => {
@@ -17,17 +15,28 @@ const ViewContact = () => {
 
   // Fetch User Data 
   const [Data, setData] = useState([]);
+  const [Error, setError] = useState("");
   const { id } = useParams();
   const getData = async () => {
     setLoading(true);
     try {
       const responce = await fetch(`${baseUrl}/route/get/${id}`)
       const Data = await responce.json();
+      if (!responce.ok) {
+        console.log(Data.error);
+        setError(Data.error);
+        toast.error(Data.error || "Failed to load contact.");
+        setLoading(false);
+        return;
+      }
       setData([Data]);
       console.log(Data);
       setLoading(false);
     } catch (error) {
       console.log(error);
+      setError("Unable to reach the server");
+      toast.error("Unable to connect to the server. Please check your connection and try again.");
+      setLoading(false);
     }
   }
 
@@ -38,22 +47,28 @@ const ViewContact = () => {
   // Delete Function 
   async function Delete(ID) {
     setLoading(true);
-    const responce = await fetch(`${baseUrl}/route/del/${ID}`, {
-      method: "DELETE",
-    });
-    const delResult = await responce.json();
-    if (!responce.ok) {
-      console.log(delResult.error);
-    }
-    if (responce.ok) {
-      console.log("Deleted", responce.ok);
-      setTimeout(() => {
-        getData();
-        setError("");
+    try {
+      const responce = await fetch(`${baseUrl}/route/del/${ID}`, {
+        method: "DELETE",
+      });
+      const delResult = await responce.json();
+      if (!responce.ok) {
+        console.log(delResult.error);
+        setError(delResult.error);
+        toast.error(delResult.error || "Failed to delete contact.");
         setLoading(false);
-      }, 1000);
+        return;
+      }
+      console.log("Deleted", responce.ok);
+      setError("");
+      setLoading(false);
       toast.success("Deleted Successfully !");
       nevigate("/dash");
+    } catch (error) {
+      console.log(error);
+      setError("Unable to reach the server");
+      toast.error("Unable to connect to the server. Please check your connection and try again.");
+      setLoading(false);
     }
   }
 

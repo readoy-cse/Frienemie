@@ -4,12 +4,11 @@ import HashLoader from "react-spinners/HashLoader";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import imgUrl from '../../assets/Img/Untitled.png';
-
-const baseUrl = import.meta.env.VITE_API_URL;
-console.log("Base Url : ", baseUrl);
+import { baseUrl } from '../../utils/env';
 
 const Dashboard = () => {
 
+  console.log(baseUrl);
   const [Data, setData] = useState([]);
   const [error, setError] = useState();
   const [loading, setLoading] = useState();
@@ -20,16 +19,25 @@ const Dashboard = () => {
 
   async function getData() {
     setLoading(true);
-    const response = await fetch(`${baseUrl}/route/read/${UserId}`);
-    const result = await response.json();
-    console.log("result..", result);
-    if (!response.ok) {
-      console.log(result.Error);
-    }
-    if (response.ok) {
+    try {
+      const response = await fetch(`${baseUrl}/route/read/${UserId}`);
+      const result = await response.json();
+      console.log("result..", result);
+      if (!response.ok) {
+        console.log(result.Error);
+        setError(result.Error);
+        toast.error(result.Error || "Failed to load contacts.");
+        setLoading(false);
+        return;
+      }
       console.log(response.ok);
       setData(result);
       setError("");
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setError("Unable to reach the server");
+      toast.error("Unable to connect to the server. Please check your connection and try again.");
       setLoading(false);
     }
   }
@@ -40,14 +48,18 @@ const Dashboard = () => {
 
   async function Delete(ID) {
     setLoading(true);
-    const responce = await fetch(`${baseUrl}/route/del/${ID}`, {
-      method: "DELETE",
-    });
-    const delResult = await responce.json();
-    if (!responce.ok) {
-      console.log(delResult.error);
-    }
-    if (responce.ok) {
+    try {
+      const responce = await fetch(`${baseUrl}/route/del/${ID}`, {
+        method: "DELETE",
+      });
+      const delResult = await responce.json();
+      if (!responce.ok) {
+        console.log(delResult.error);
+        setError(delResult.error);
+        toast.error(delResult.error || "Failed to delete contact.");
+        setLoading(false);
+        return;
+      }
       console.log("Deleted", responce.ok);
       setTimeout(() => {
         getData();
@@ -56,6 +68,11 @@ const Dashboard = () => {
       }, 1000);
 
       toast.success("Deleted Successfully !");
+    } catch (error) {
+      console.log(error);
+      setError("Unable to reach the server");
+      toast.error("Unable to connect to the server. Please check your connection and try again.");
+      setLoading(false);
     }
   }
 

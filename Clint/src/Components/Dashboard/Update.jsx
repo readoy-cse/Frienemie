@@ -4,8 +4,7 @@ import HashLoader from "react-spinners/HashLoader";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import imgUrl from '../../assets/Img/Untitled.png';
-
-const baseUrl = import.meta.env.VITE_API_URL;
+import { baseUrl } from '../../utils/env';
 
 const Update = () => {
 
@@ -54,18 +53,27 @@ const Update = () => {
 
     const { id } = useParams();
     const getData = async () => {
+        setLoading(true);
+        try {
+            const responce = await fetch(`${baseUrl}/route/get/${id}`)
+            const result = await responce.json();
 
-        const responce = await fetch(`${baseUrl}/route/get/${id}`)
-        const result = await responce.json();
-
-        if (responce.ok) {
-            setName(result.Name);
-            setEmail(result.Email);
-            setPhoen_No(result.Phoen_No);
-            setImage(result.image);
-            setLoading(false);
-        } else {
-            console.log(responce.error);
+            if (responce.ok) {
+                setName(result.Name);
+                setEmail(result.Email);
+                setPhoen_No(result.Phoen_No);
+                setImage(result.image);
+                setLoading(false);
+            } else {
+                console.log(result.error);
+                setError(result.error);
+                toast.error(result.error || "Failed to load contact.");
+                setLoading(false);
+            }
+        } catch (error) {
+            console.log(error);
+            setError("Unable to reach the server");
+            toast.error("Unable to connect to the server. Please check your connection and try again.");
             setLoading(false);
         }
     }
@@ -79,32 +87,42 @@ const Update = () => {
 
         e.preventDefault();
 
+        if (!Name || !Email || !Phoen_No) {
+            return toast.error("Please fill in all fields");
+        }
+
         setLoading(true);
         const url = await UploadImage(image);
         console.log(url);
 
         const updatedUser = { Name, Email, Phoen_No, image: url };
         // console.log(updatedUser);
-        const response = await fetch(`${baseUrl}/route/get/up/${id}`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedUser),
-        });
+        try {
+            const response = await fetch(`${baseUrl}/route/get/up/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedUser),
+            });
 
-        const result = await response.json();
-        if (response.ok) {
-            toast.success('Update Successfully !');
-            console.log("updated result..", result);
-            setError("");
-            Nevigate("/dash");
-            setLoading(false);
-        }
-        if (!response.ok) {
-            console.log(response.error);
-            setError(response.error);
-            toast.error('An Error Detected !');
+            const result = await response.json();
+            if (response.ok) {
+                toast.success('Update Successfully !');
+                console.log("updated result..", result);
+                setError("");
+                Nevigate("/dash");
+                setLoading(false);
+            } else {
+                console.log(result.error);
+                setError(result.error);
+                toast.error(result.error || "An error occurred while updating.");
+                setLoading(false);
+            }
+        } catch (error) {
+            console.log(error);
+            setError("Unable to reach the server");
+            toast.error("Unable to connect to the server. Please check your connection and try again.");
             setLoading(false);
         }
     };
